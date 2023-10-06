@@ -18,7 +18,8 @@ import {
   updateCommunityInfo,
 } from "@/lib/actions/community.actions";
 
-
+// Resource: https://clerk.com/docs/integration/webhooks#supported-events
+// Above document lists the supported events
 type EventType =
   | "organization.created"
   | "organizationInvitation.created"
@@ -43,7 +44,8 @@ export const POST = async (request: Request) => {
     "svix-signature": header.get("svix-signature"),
   };
 
-  
+  // Activitate Webhook in the Clerk Dashboard.
+  // After adding the endpoint, you'll see the secret on the right side.
   const wh = new Webhook(process.env.NEXT_CLERK_WEBHOOK_SECRET || "");
 
   let evnt: Event | null = null;
@@ -59,8 +61,10 @@ export const POST = async (request: Request) => {
 
   const eventType: EventType = evnt?.type!;
 
+  // Listen organization creation event
   if (eventType === "organization.created") {
-   
+    // Resource: https://clerk.com/docs/reference/backend-api/tag/Organizations#operation/CreateOrganization
+    // Show what evnt?.data sends from above resource
     const { id, name, slug, logo_url, image_url, created_by } =
       evnt?.data ?? {};
 
@@ -86,9 +90,12 @@ export const POST = async (request: Request) => {
     }
   }
 
- 
+  // Listen organization invitation creation event.
+  // Just to show. You can avoid this or tell people that we can create a new mongoose action and
+  // add pending invites in the database.
   if (eventType === "organizationInvitation.created") {
     try {
+      // Resource: https://clerk.com/docs/reference/backend-api/tag/Organization-Invitations#operation/CreateOrganizationInvitation
       console.log("Invitation created", evnt?.data);
 
       return NextResponse.json(
